@@ -4,33 +4,37 @@ import (
 	"fmt"
 	"net/http"
 
+	"financial-tracker/database"
 	"financial-tracker/handlers"
 )
 
-// main starts the HTTP server
-// and connects our application routes.
 func main() {
 
-	// Register the transactions collection endpoint.
-	// Example: GET /transactions
-	//          POST /transactions
-	http.HandleFunc("/transactions", handlers.TransactionHandler)
+	// Connect to the PostgreSQL database.
+	pool, err := database.Connect()
 
-	// Register individual transaction endpoints.
-	// Example: GET /transactions/1
-	http.HandleFunc("/transactions/", handlers.TransactionHandler)
+	// Stop the application if the database connection fails.
+	if err != nil {
+		fmt.Println("Database connection failed:", err)
+		return
+	}
 
-	// Register the financial summary endpoint.
-	// Example: GET /summary
-	http.HandleFunc("/summary", handlers.SummaryHandler)
+	// Close the connection pool when the server stops.
+	defer pool.Close()
 
-	// Display the server address.
+	// Create our transaction handler using the database pool.
+	transactionHandler := handlers.TransactionHandler(pool)
+
+	// Register the transaction routes.
+	http.HandleFunc("/transactions", transactionHandler)
+	http.HandleFunc("/transactions/", transactionHandler)
+
 	fmt.Println("Server running on http://localhost:8080")
 
 	// Start the HTTP server.
-	err := http.ListenAndServe(":8080", nil)
+	err = http.ListenAndServe(":8080", nil)
 
-	// Display an error if the server fails to start.
+	// Report a server error if one occurs.
 	if err != nil {
 		fmt.Println("Server error:", err)
 	}

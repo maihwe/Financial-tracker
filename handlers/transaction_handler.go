@@ -9,229 +9,273 @@ import (
 	"financial-tracker/models"
 	"financial-tracker/storage"
 	"financial-tracker/utils"
+
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-// TransactionHandler handles requests related to transactions.
-func TransactionHandler(w http.ResponseWriter, r *http.Request) {
+// TransactionHandler handles transaction-related HTTP requests.
+func TransactionHandler(pool *pgxpool.Pool) http.HandlerFunc {
 
-	// Tell the client that our responses are JSON.
-	w.Header().Set("Content-Type", "application/json")
+	return func(w http.ResponseWriter, r *http.Request) {
 
-	// Handle PUT requests.
-	if r.Method == http.MethodPut {
+		w.Header().Set("Content-Type", "application/json")
 
-		// Split a path such as /transactions/3.
-		// The result is:
-		// ["", "transactions", "3"]
-		parts := strings.Split(r.URL.Path, "/")
+		// Handle GET requests.
+		if r.Method == http.MethodGet {
 
-		// Make sure the path contains a transaction ID.
-		if len(parts) != 3 || parts[1] != "transactions" {
-			http.Error(w, "Invalid transaction path", http.StatusBadRequest)
+			// GET /transactions
+			if r.URL.Path == "/transactions" {
+
+				transactions, err := storage.GetAllTransactionsFromDB(pool)
+
+				if err != nil {
+					http.Error(
+						w,
+						"Could not retrieve transactions",
+						http.StatusInternalServerError,
+					)
+					return
+				}
+
+				json.NewEncoder(w).Encode(transactions)
+				return
+			}
+
+			// GET /transactions/{id}
+			parts := strings.Split(
+				strings.Trim(r.URL.Path, "/"),
+				"/",
+			)
+
+			// Expected:
+			// ["transactions", "18"]
+			if len(parts) != 2 || parts[0] != "transactions" {
+				http.Error(
+					w,
+					"Invalid transaction path",
+					http.StatusBadRequest,
+				)
+				return
+			}
+
+			// Convert the ID from string to integer.
+			id, err := strconv.Atoi(parts[1])
+
+			if err != nil {
+				http.Error(
+					w,
+					"Invalid transaction ID",
+					http.StatusBadRequest,
+				)
+				return
+			}
+
+			// Get the transaction from PostgreSQL.
+			transaction, err := storage.GetTransactionByIDFromDB(
+				pool,
+				id,
+			)
+
+			// Return 404 when the transaction doesn't exist.
+			if err != nil {
+				http.Error(
+					w,
+					"Transaction not found",
+					http.StatusNotFound,
+				)
+				return
+			}
+
+			// Return the transaction.
+			json.NewEncoder(w).Encode(transaction)
 			return
 		}
 
-		// Convert the ID from a string into an integer.
-		id, err := strconv.Atoi(parts[2])
+		// Handle POST requests.
+		if r.Method == http.MethodPost {
 
-		// Stop if the ID is not a valid number.
-		if err != nil {
-			http.Error(w, "Invalid transaction ID", http.StatusBadRequest)
+			var newTransaction models.Transaction
+
+			err := json.NewDecoder(r.Body).Decode(
+				&newTransaction,
+			)
+
+			if err != nil {
+				http.Error(
+					w,
+					"Invalid JSON",
+					http.StatusBadRequest,
+				)
+				return
+			}
+
+			validationError := utils.ValidateTransaction(
+				newTransaction,
+			)
+
+			if validationError != "" {
+				http.Error(
+					w,
+					validationError,
+					http.StatusBadRequest,
+				)
+				return
+			}
+
+			newTransaction, err =
+				storage.AddTransactionToDB(
+					pool,
+					newTransaction,
+				)
+
+			if err != nil {
+				http.Error(
+					w,
+					"Could not save transaction",
+					http.StatusInternalServerError,
+				)
+				return
+			}
+
+			w.WriteHeader(http.StatusCreated)
+
+			json.NewEncoder(w).Encode(newTransaction)
 			return
 		}
 
-		// Create an empty transaction to receive
-		// the client's updated JSON data.
-		var updatedTransaction models.Transaction
+		// Handle PUT requests.
+		if r.Method == http.MethodPut {
 
-		// Decode the request body.
-		err = json.NewDecoder(r.Body).Decode(&updatedTransaction)
+			// Extract the transaction ID from the URL.
+			parts := strings.Split(
+				strings.Trim(r.URL.Path, "/"),
+				"/",
+			)
 
-		// Stop if the JSON is invalid.
-		if err != nil {
-			http.Error(w, "Invalid JSON", http.StatusBadRequest)
+			// Expected:
+			// ["transactions", "18"]
+			if len(parts) != 2 || parts[0] != "transactions" {
+				http.Error(
+					w,
+					"Invalid transaction path",
+					http.StatusBadRequest,
+				)
+				return
+			}
+
+			// Convert the ID from string to integer.
+			id, err := strconv.Atoi(parts[1])
+
+			if err != nil {
+				http.Error(
+					w,
+					"Invalid transaction ID",
+					http.StatusBadRequest,
+				)
+				return
+			}
+
+			// Decode the new transaction values.
+			var updatedTransaction models.Transaction
+
+			err = json.NewDecoder(r.Body).Decode(
+				&updatedTransaction,
+			)
+
+			if err != nil {
+				http.Error(
+					w,
+					"Invalid JSON",
+					http.StatusBadRequest,
+				)
+				return
+			}
+
+			// Validate the new transaction values.
+			validationError := utils.ValidateTransaction(
+				updatedTransaction,
+			)
+
+			if validationError != "" {
+				http.Error(
+					w,
+					validationError,
+					http.StatusBadRequest,
+				)
+				return
+			}
+
+			// Update the transaction in PostgreSQL.
+			result, err := storage.UpdateTransactionInDB(
+				pool,
+				id,
+				updatedTransaction,
+			)
+
+			if err != nil {
+				http.Error(
+					w,
+					"Transaction not found",
+					http.StatusNotFound,
+				)
+				return
+			}
+
+			// Return the updated transaction.
+			json.NewEncoder(w).Encode(result)
+			return
+		}
+		if r.Method == http.MethodDelete {
+
+			parts := strings.Split(strings.Trim(r.URL.Path, "/"), "/")
+
+			if len(parts) != 2 {
+				http.Error(w, "Invalid transaction path", http.StatusBadRequest)
+				return
+			}
+
+			id, err := strconv.Atoi(parts[1])
+
+			if err != nil {
+				http.Error(w, "Invalid transaction ID", http.StatusBadRequest)
+				return
+			}
+
+			handleDeleteTransaction(w, r, pool, id)
 			return
 		}
 
-		// Validate the new transaction data.
-		validationError := utils.ValidateTransaction(updatedTransaction)
-
-		// Stop if validation fails.
-		if validationError != "" {
-			http.Error(w, validationError, http.StatusBadRequest)
-			return
-		}
-
-		// Update the transaction in storage.
-		updatedTransaction, found := storage.UpdateTransaction(
-			id,
-			updatedTransaction,
+		// Reject unsupported HTTP methods.
+		http.Error(
+			w,
+			"Method not allowed",
+			http.StatusMethodNotAllowed,
 		)
-
-		// Return 404 if the transaction does not exist.
-		if !found {
-			http.Error(w, "Transaction not found", http.StatusNotFound)
-			return
-		}
-
-		// Return the updated transaction.
-		json.NewEncoder(w).Encode(updatedTransaction)
-
-		return
 	}
-
-	// Handle DELETE requests.
-	if r.Method == http.MethodDelete {
-
-		// Split a path such as /transactions/3.
-		// The result is:
-		// ["", "transactions", "3"]
-		parts := strings.Split(r.URL.Path, "/")
-
-		// Make sure the path contains a transaction ID.
-		if len(parts) != 3 || parts[1] != "transactions" {
-			http.Error(w, "Invalid transaction path", http.StatusBadRequest)
-			return
-		}
-
-		// Convert the ID from a string into an integer.
-		id, err := strconv.Atoi(parts[2])
-
-		// Stop if the ID is not a valid number.
-		if err != nil {
-			http.Error(w, "Invalid transaction ID", http.StatusBadRequest)
-			return
-		}
-
-		// Try to delete the transaction.
-		deleted := storage.DeleteTransaction(id)
-
-		// Return 404 if the transaction does not exist.
-		if !deleted {
-			http.Error(w, "Transaction not found", http.StatusNotFound)
-			return
-		}
-
-		// Tell the client that the transaction was successfully deleted.
-		w.WriteHeader(http.StatusNoContent)
-
-		return
-	}
-
-	// Handle POST requests.
-	if r.Method == http.MethodPost {
-
-		// Create an empty transaction to receive
-		// the client's JSON data.
-		var newTransaction models.Transaction
-
-		// Decode the JSON request body.
-		err := json.NewDecoder(r.Body).Decode(&newTransaction)
-
-		// Stop if the JSON is invalid.
-		if err != nil {
-			http.Error(w, "Invalid JSON", http.StatusBadRequest)
-			return
-		}
-
-		// Validate the transaction before saving it.
-		validationError := utils.ValidateTransaction(newTransaction)
-
-		// Stop if validation fails.
-		if validationError != "" {
-			http.Error(w, validationError, http.StatusBadRequest)
-			return
-		}
-
-		// Store the valid transaction.
-		newTransaction = storage.AddTransaction(newTransaction)
-
-		// Tell the client that a new resource was created.
-		w.WriteHeader(http.StatusCreated)
-
-		// Return the created transaction as JSON.
-		json.NewEncoder(w).Encode(newTransaction)
-
-		return
-	}
-
-	// Handle GET requests.
-	if r.Method == http.MethodGet {
-
-		// If the path is exactly /transactions,
-		// return every transaction.
-		if r.URL.Path == "/transactions" {
-
-			// Get all transactions from storage.
-			transactions := storage.GetAllTransactions()
-
-			// Return them as JSON.
-			json.NewEncoder(w).Encode(transactions)
-
-			return
-		}
-
-		// Split a path such as /transactions/3.
-		// The result is:
-		// ["", "transactions", "3"]
-		parts := strings.Split(r.URL.Path, "/")
-
-		// Make sure the path has the correct structure.
-		if len(parts) != 3 || parts[1] != "transactions" {
-			http.Error(w, "Invalid transaction path", http.StatusBadRequest)
-			return
-		}
-
-		// Convert the ID from string to integer.
-		id, err := strconv.Atoi(parts[2])
-
-		// Stop if the ID is not a valid number.
-		if err != nil {
-			http.Error(w, "Invalid transaction ID", http.StatusBadRequest)
-			return
-		}
-
-		// Search for the transaction.
-		transaction, found := storage.GetTransactionByID(id)
-
-		// Return 404 if it does not exist.
-		if !found {
-			http.Error(w, "Transaction not found", http.StatusNotFound)
-			return
-		}
-
-		// Return the transaction as JSON.
-		json.NewEncoder(w).Encode(transaction)
-
-		return
-	}
-
-	// Handle unsupported HTTP methods.
-	http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 }
 
-// SummaryHandler returns our financial summary.
-func SummaryHandler(w http.ResponseWriter, r *http.Request) {
+// handleDeleteTransaction deletes a transaction from PostgreSQL.
+func handleDeleteTransaction(
+	w http.ResponseWriter,
+	r *http.Request,
+	pool *pgxpool.Pool,
+	id int,
+) {
+	// Delete the transaction from the database.
+	err := storage.DeleteTransactionFromDB(pool, id)
 
-	// Only GET is allowed for the summary.
-	if r.Method != http.MethodGet {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+	// If nothing was deleted, the transaction does not exist.
+	if err != nil {
+		http.Error(
+			w,
+			"Transaction not found",
+			http.StatusNotFound,
+		)
 		return
 	}
 
-	// Tell the client that we are returning JSON.
-	w.Header().Set("Content-Type", "application/json")
-
-	// Calculate the financial totals.
-	totalIncome, totalExpenses, balance := storage.GetFinancialSummary()
-
-	// Create the response.
-	summary := map[string]float64{
-		"total_income":   totalIncome,
-		"total_expenses": totalExpenses,
-		"balance":        balance,
-	}
-
-	// Return the summary as JSON.
-	json.NewEncoder(w).Encode(summary)
+	// 204 means the deletion was successful
+	// and there is no response body.
+	w.Header().Del("Content-Type")
+	w.WriteHeader(http.StatusNoContent)
 }
