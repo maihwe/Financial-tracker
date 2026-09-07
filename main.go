@@ -25,6 +25,9 @@ func main() {
 	// Create our transaction handler using the database pool.
 	transactionHandler := handlers.TransactionHandler(pool)
 
+	// Serve the frontend files.
+	http.Handle("/", http.FileServer(http.Dir("./frontend")))
+
 	// Register the transaction routes.
 	http.HandleFunc("/transactions", transactionHandler)
 	http.HandleFunc("/transactions/", transactionHandler)

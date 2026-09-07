@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Financial Tracker</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+  <body>
+
+    <header>
+        <h1>Financial Tracker</h1>
+        <p>Manage your income and expenses</p>
+    </header>
+
+    <main>
+
+        <section id="summary">
+            <h2>Financial Summary</h2>
+
+            <div>
+                <h3>Total Income</h3>
+                <p id="total-income">₦0.00</p>
+            </div>
+
+            <div>
+                <h3>Total Expenses</h3>
+                <p id="total-expenses">₦0.00</p>
+            </div>
+
+            <div>
+                <h3>Balance</h3>
+                <p id="balance">₦0.00</p>
+            </div>
+        </section>
+
+        <section id="add-transaction">
+            <h2>Add Transaction</h2>
+
+            <form>
+                <input
+                    type="text"
+                    name="title"
+                    placeholder="Transaction title"
+                >
+
+                <input
+                    type="number"
+                    name="amount"
+                    placeholder="Amount"
+                >
+
+                <input
+                    type="text"
+                    name="category"
+                    placeholder="Category"
+                >
+
+                <select name="type">
+                    <option value="income">Income</option>
+                    <option value="expense">Expense</option>
+                </select>
+
+                <button type="submit">
+                    Add Transaction
+                </button>
+            </form>
+        </section>
+
+        <section id="transactions">
+            <h2>Transactions</h2>
+
+            <div id="transaction-list"></div>
+        </section>
+
+    </main>
+
+    <script src="app.js"></script>
+
+</body>
+</html
