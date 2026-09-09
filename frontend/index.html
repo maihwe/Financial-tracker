@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,7 +10,7 @@
     <link rel="stylesheet" href="style.css">
 </head>
 
-  <body>
+<body>
 
     <header>
         <h1>Financial Tracker</h1>
@@ -18,7 +19,9 @@
 
     <main>
 
+        <!-- Financial Summary -->
         <section id="summary">
+
             <h2>Financial Summary</h2>
 
             <div>
@@ -35,50 +38,86 @@
                 <h3>Balance</h3>
                 <p id="balance">₦0.00</p>
             </div>
+
         </section>
 
-        <section id="add-transaction">
-            <h2>Add Transaction</h2>
 
-            <form>
+        <!-- Transaction Form -->
+        <section id="add-transaction">
+
+            <h2 id="form-title">Add Transaction</h2>
+
+            <form id="transaction-form">
+
                 <input
                     type="text"
+                    id="title"
                     name="title"
                     placeholder="Transaction title"
+                    required
                 >
 
                 <input
                     type="number"
+                    id="amount"
                     name="amount"
                     placeholder="Amount"
+                    min="0"
+                    step="0.01"
+                    required
                 >
 
                 <input
                     type="text"
+                    id="category"
                     name="category"
                     placeholder="Category"
+                    required
                 >
 
-                <select name="type">
+                <select
+                    id="type"
+                    name="type"
+                    required
+                >
                     <option value="income">Income</option>
                     <option value="expense">Expense</option>
                 </select>
 
-                <button type="submit">
+                <button
+                    type="submit"
+                    id="submit-button"
+                >
                     Add Transaction
                 </button>
+
+                <button
+                    type="button"
+                    id="cancel-button"
+                    hidden
+                >
+                    Cancel Edit
+                </button>
+
             </form>
+
         </section>
 
+
+        <!-- Transaction History -->
         <section id="transactions">
+
             <h2>Transactions</h2>
 
             <div id="transaction-list"></div>
+
         </section>
 
     </main>
 
+
     <script src="app.js"></script>
 
 </body>
-</html
+
+</html>
