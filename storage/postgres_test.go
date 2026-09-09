@@ -3,13 +3,14 @@ package storage
 import (
 	"os"
 	"testing"
+	"time"
 
 	"financial-tracker/database"
 	"financial-tracker/models"
 )
 
 // TestGetTransactionByIDFromDB checks that we can
-// retrieve one transaction from PostgreSQL.
+// retrieve one transaction belonging to the correct user.
 func TestGetTransactionByIDFromDB(t *testing.T) {
 
 	// Skip the test if DATABASE_URL is not available.
@@ -25,12 +26,30 @@ func TestGetTransactionByIDFromDB(t *testing.T) {
 
 	defer conn.Close()
 
+	// Create a test user.
+	user := models.User{
+		Email:        "get-test-" + time.Now().Format("20060102150405.000000000") + "@example.com",
+		PasswordHash: "test-password-hash",
+	}
+
+	createdUser, err := CreateUserInDB(
+		conn,
+		user,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	userID := createdUser.ID
+
 	// Create a transaction specifically for this test.
 	transaction := models.Transaction{
-		Title:    "Get Test",
-		Amount:   10000,
-		Category: "Testing",
-		Type:     "income",
+		UserID:      userID,
+		Title:       "Get Test",
+		Amount:      10000,
+		CategoryID:  14, // Other
+		Type:        "income",
+		Description: "Transaction retrieval test",
 	}
 
 	// Insert the test transaction.
@@ -46,12 +65,14 @@ func TestGetTransactionByIDFromDB(t *testing.T) {
 	defer DeleteTransactionFromDB(
 		conn,
 		savedTransaction.ID,
+		userID,
 	)
 
-	// Retrieve the transaction we just created.
+	// Retrieve the transaction using the correct user ID.
 	foundTransaction, err := GetTransactionByIDFromDB(
 		conn,
 		savedTransaction.ID,
+		userID,
 	)
 	if err != nil {
 		t.Fatal(err)
@@ -66,13 +87,124 @@ func TestGetTransactionByIDFromDB(t *testing.T) {
 		)
 	}
 
+	// Check that the correct user owns the transaction.
+	if foundTransaction.UserID != userID {
+		t.Errorf(
+			"expected UserID %d, got %d",
+			userID,
+			foundTransaction.UserID,
+		)
+	}
+
+	// Check that the category ID was retrieved correctly.
+	if foundTransaction.CategoryID != 14 {
+		t.Errorf(
+			"expected CategoryID 14, got %d",
+			foundTransaction.CategoryID,
+		)
+	}
+
+	// Check that the description was retrieved correctly.
+	if foundTransaction.Description != "Transaction retrieval test" {
+		t.Errorf(
+			"expected description Transaction retrieval test, got %s",
+			foundTransaction.Description,
+		)
+	}
+
 	// Check that PostgreSQL created the timestamps.
+	if foundTransaction.TransactionAt.IsZero() {
+		t.Error("expected TransactionAt to be set")
+	}
+
 	if foundTransaction.CreatedAt.IsZero() {
 		t.Error("expected CreatedAt to be set")
 	}
 
 	if foundTransaction.UpdatedAt.IsZero() {
 		t.Error("expected UpdatedAt to be set")
+	}
+}
+
+// TestGetTransactionByIDFromDBRejectsWrongUser verifies that
+// one user cannot retrieve another user's transaction.
+func TestGetTransactionByIDFromDBRejectsWrongUser(t *testing.T) {
+
+	// Skip the test if DATABASE_URL is not available.
+	if os.Getenv("DATABASE_URL") == "" {
+		t.Skip("DATABASE_URL is not set")
+	}
+
+	// Connect to PostgreSQL.
+	conn, err := database.Connect()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	defer conn.Close()
+
+	// Create the transaction owner.
+	owner := models.User{
+		Email:        "owner-test-" + time.Now().Format("20060102150405.000000000") + "@example.com",
+		PasswordHash: "test-password-hash",
+	}
+
+	createdOwner, err := CreateUserInDB(
+		conn,
+		owner,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Create another user.
+	otherUser := models.User{
+		Email:        "other-test-" + time.Now().Format("20060102150405.000000000") + "@example.com",
+		PasswordHash: "test-password-hash",
+	}
+
+	createdOtherUser, err := CreateUserInDB(
+		conn,
+		otherUser,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Create a transaction owned by the first user.
+	transaction := models.Transaction{
+		UserID:      createdOwner.ID,
+		Title:       "Private Transaction",
+		Amount:      5000,
+		CategoryID:  14,
+		Type:        "expense",
+		Description: "Ownership test",
+	}
+
+	savedTransaction, err := AddTransactionToDB(
+		conn,
+		transaction,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	defer DeleteTransactionFromDB(
+		conn,
+		savedTransaction.ID,
+		createdOwner.ID,
+	)
+
+	// Try to retrieve the transaction using another user's ID.
+	_, err = GetTransactionByIDFromDB(
+		conn,
+		savedTransaction.ID,
+		createdOtherUser.ID,
+	)
+
+	// The query should not reveal the transaction.
+	if err == nil {
+		t.Fatal("expected wrong user to be unable to retrieve transaction")
 	}
 }
 
@@ -93,12 +225,30 @@ func TestUpdateTransactionInDB(t *testing.T) {
 
 	defer conn.Close()
 
+	// Create a test user.
+	user := models.User{
+		Email:        "update-test-" + time.Now().Format("20060102150405.000000000") + "@example.com",
+		PasswordHash: "test-password-hash",
+	}
+
+	createdUser, err := CreateUserInDB(
+		conn,
+		user,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	userID := createdUser.ID
+
 	// Create a transaction specifically for this test.
 	transaction := models.Transaction{
-		Title:    "Original Salary",
-		Amount:   50000,
-		Category: "Salary",
-		Type:     "income",
+		UserID:      userID,
+		Title:       "Original Salary",
+		Amount:      50000,
+		CategoryID:  3, // Salary
+		Type:        "income",
+		Description: "Original salary transaction",
 	}
 
 	// Insert the test transaction.
@@ -109,26 +259,32 @@ func TestUpdateTransactionInDB(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+
 	originalCreatedAt := savedTransaction.CreatedAt
 	originalUpdatedAt := savedTransaction.UpdatedAt
+
 	// Clean up the test transaction when the test finishes.
 	defer DeleteTransactionFromDB(
 		conn,
 		savedTransaction.ID,
+		userID,
 	)
 
-	// Create the new values.
 	updatedTransaction := models.Transaction{
-		Title:    "Updated Salary",
-		Amount:   75000,
-		Category: "Salary",
-		Type:     "income",
+		UserID:        userID,
+		Title:         "Updated Salary",
+		Amount:        75000,
+		CategoryID:    3, // Salary
+		Type:          "income",
+		Description:   "Updated salary transaction",
+		TransactionAt: savedTransaction.TransactionAt.Add(2 * time.Hour),
 	}
 
 	// Update the transaction.
 	result, err := UpdateTransactionInDB(
 		conn,
 		savedTransaction.ID,
+		userID,
 		updatedTransaction,
 	)
 	if err != nil {
@@ -141,6 +297,15 @@ func TestUpdateTransactionInDB(t *testing.T) {
 			"expected ID %d, got %d",
 			savedTransaction.ID,
 			result.ID,
+		)
+	}
+
+	// Check that ownership did not change.
+	if result.UserID != userID {
+		t.Errorf(
+			"expected UserID %d, got %d",
+			userID,
+			result.UserID,
 		)
 	}
 
@@ -159,6 +324,29 @@ func TestUpdateTransactionInDB(t *testing.T) {
 			result.Amount,
 		)
 	}
+
+	// Check that the description changed.
+	if result.Description != "Updated salary transaction" {
+		t.Errorf(
+			"expected description Updated salary transaction, got %s",
+			result.Description,
+		)
+	}
+
+	// Check that the category ID is correct.
+	if result.CategoryID != 3 {
+		t.Errorf(
+			"expected CategoryID 3, got %d",
+			result.CategoryID,
+		)
+	}
+
+	// TransactionAt should change because the update
+	// supplied a new transaction time.
+	if result.TransactionAt.Equal(savedTransaction.TransactionAt) {
+		t.Error("expected TransactionAt to change")
+	}
+
 	// created_at should never change when a transaction is updated.
 	if !result.CreatedAt.Equal(originalCreatedAt) {
 		t.Error("expected CreatedAt to remain unchanged")
@@ -195,12 +383,30 @@ func TestDeleteTransactionFromDB(t *testing.T) {
 
 	defer conn.Close()
 
+	// Create a test user.
+	user := models.User{
+		Email:        "delete-test-" + time.Now().Format("20060102150405.000000000") + "@example.com",
+		PasswordHash: "test-password-hash",
+	}
+
+	createdUser, err := CreateUserInDB(
+		conn,
+		user,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	userID := createdUser.ID
+
 	// Create a transaction specifically for this test.
 	transaction := models.Transaction{
-		Title:    "Delete Test",
-		Amount:   15000,
-		Category: "Testing",
-		Type:     "expense",
+		UserID:      userID,
+		Title:       "Delete Test",
+		Amount:      15000,
+		CategoryID:  14, // Other
+		Type:        "expense",
+		Description: "Transaction deletion test",
 	}
 
 	// Insert the test transaction.
@@ -216,6 +422,7 @@ func TestDeleteTransactionFromDB(t *testing.T) {
 	err = DeleteTransactionFromDB(
 		conn,
 		savedTransaction.ID,
+		userID,
 	)
 	if err != nil {
 		t.Fatal(err)
@@ -225,6 +432,7 @@ func TestDeleteTransactionFromDB(t *testing.T) {
 	_, err = GetTransactionByIDFromDB(
 		conn,
 		savedTransaction.ID,
+		userID,
 	)
 
 	// We expect PostgreSQL to report that the row doesn't exist.
@@ -233,8 +441,100 @@ func TestDeleteTransactionFromDB(t *testing.T) {
 	}
 }
 
+// TestDeleteTransactionFromDBRejectsWrongUser verifies that
+// one user cannot delete another user's transaction.
+func TestDeleteTransactionFromDBRejectsWrongUser(t *testing.T) {
+
+	// Skip the test if DATABASE_URL is not available.
+	if os.Getenv("DATABASE_URL") == "" {
+		t.Skip("DATABASE_URL is not set")
+	}
+
+	// Connect to PostgreSQL.
+	conn, err := database.Connect()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	defer conn.Close()
+
+	// Create transaction owner.
+	owner := models.User{
+		Email:        "delete-owner-" + time.Now().Format("20060102150405.000000000") + "@example.com",
+		PasswordHash: "test-password-hash",
+	}
+
+	createdOwner, err := CreateUserInDB(
+		conn,
+		owner,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Create another user.
+	otherUser := models.User{
+		Email:        "delete-other-" + time.Now().Format("20060102150405.000000000") + "@example.com",
+		PasswordHash: "test-password-hash",
+	}
+
+	createdOtherUser, err := CreateUserInDB(
+		conn,
+		otherUser,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Create a transaction owned by the first user.
+	transaction := models.Transaction{
+		UserID:     createdOwner.ID,
+		Title:      "Protected Transaction",
+		Amount:     1000,
+		CategoryID: 14,
+		Type:       "expense",
+	}
+
+	savedTransaction, err := AddTransactionToDB(
+		conn,
+		transaction,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	defer DeleteTransactionFromDB(
+		conn,
+		savedTransaction.ID,
+		createdOwner.ID,
+	)
+
+	// Try to delete it using another user's ID.
+	err = DeleteTransactionFromDB(
+		conn,
+		savedTransaction.ID,
+		createdOtherUser.ID,
+	)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Verify the transaction still exists.
+	_, err = GetTransactionByIDFromDB(
+		conn,
+		savedTransaction.ID,
+		createdOwner.ID,
+	)
+
+	if err != nil {
+		t.Fatal("expected transaction to still exist after unauthorized delete")
+	}
+}
+
 // TestGetFinancialSummaryFromDB checks that PostgreSQL
-// correctly calculates income, expenses, and balance.
+// correctly calculates income, expenses, and balance
+// for one specific user.
 func TestGetFinancialSummaryFromDB(t *testing.T) {
 
 	// Skip the test if DATABASE_URL is not available.
@@ -250,59 +550,96 @@ func TestGetFinancialSummaryFromDB(t *testing.T) {
 
 	defer conn.Close()
 
+	// Create a test user.
+	user := models.User{
+		Email:        "summary-test-" + time.Now().Format("20060102150405.000000000") + "@example.com",
+		PasswordHash: "test-password-hash",
+	}
+
+	createdUser, err := CreateUserInDB(
+		conn,
+		user,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	userID := createdUser.ID
+
 	// Create test income.
 	income := models.Transaction{
-		Title:    "Summary Income Test",
-		Amount:   100000,
-		Category: "Testing",
-		Type:     "income",
+		UserID:      userID,
+		Title:       "Summary Income Test",
+		Amount:      100000,
+		CategoryID:  14, // Other
+		Type:        "income",
+		Description: "Summary income test",
 	}
 
 	// Save the income transaction.
-	savedIncome, err := AddTransactionToDB(conn, income)
+	savedIncome, err := AddTransactionToDB(
+		conn,
+		income,
+	)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	// Create test expense.
 	expense := models.Transaction{
-		Title:    "Summary Expense Test",
-		Amount:   25000,
-		Category: "Testing",
-		Type:     "expense",
+		UserID:      userID,
+		Title:       "Summary Expense Test",
+		Amount:      25000,
+		CategoryID:  14, // Other
+		Type:        "expense",
+		Description: "Summary expense test",
 	}
 
 	// Save the expense transaction.
-	savedExpense, err := AddTransactionToDB(conn, expense)
+	savedExpense, err := AddTransactionToDB(
+		conn,
+		expense,
+	)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	// Clean up both test transactions.
-	defer DeleteTransactionFromDB(conn, savedIncome.ID)
-	defer DeleteTransactionFromDB(conn, savedExpense.ID)
+	defer DeleteTransactionFromDB(
+		conn,
+		savedIncome.ID,
+		userID,
+	)
 
-	// Get the financial summary.
+	defer DeleteTransactionFromDB(
+		conn,
+		savedExpense.ID,
+		userID,
+	)
+
+	// Get the financial summary for this user only.
 	totalIncome, totalExpenses, balance, err :=
-		GetFinancialSummaryFromDB(conn)
+		GetFinancialSummaryFromDB(
+			conn,
+			userID,
+		)
 
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	// The database may already contain other transactions,
-	// so we check that our expected amounts are reflected
-	// in the totals.
-	if totalIncome < 100000 {
+	// Because this test user is newly created,
+	// these totals should contain exactly our test transactions.
+	if totalIncome != 100000 {
 		t.Errorf(
-			"expected total income to be at least 100000, got %.2f",
+			"expected total income 100000, got %.2f",
 			totalIncome,
 		)
 	}
 
-	if totalExpenses < 25000 {
+	if totalExpenses != 25000 {
 		t.Errorf(
-			"expected total expenses to be at least 25000, got %.2f",
+			"expected total expenses 25000, got %.2f",
 			totalExpenses,
 		)
 	}

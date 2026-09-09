@@ -20,20 +20,36 @@ func TransactionHandler(pool *pgxpool.Pool) http.HandlerFunc {
 
 		w.Header().Set("Content-Type", "application/json")
 
+		// Every transaction request requires authentication.
+		userID, err := GetAuthenticatedUserID(r)
+
+		if err != nil {
+			http.Error(
+				w,
+				"Authentication required",
+				http.StatusUnauthorized,
+			)
+			return
+		}
+
 		// Handle GET requests.
 		if r.Method == http.MethodGet {
 
 			// GET /transactions
 			if r.URL.Path == "/transactions" {
 
-				transactions, err := storage.GetAllTransactionsFromDB(pool)
+				transactions, err :=
+					storage.GetAllTransactionsFromDB(
+						pool,
+						userID,
+					)
 
 				if err != nil {
-					http.Error(
-						w,
-						"Could not retrieve transactions",
-						http.StatusInternalServerError,
-					)
+    				http.Error(
+        				w,
+        				"Could not retrieve transactions: "+err.Error(),
+        				http.StatusInternalServerError,
+   					)
 					return
 				}
 
@@ -49,7 +65,9 @@ func TransactionHandler(pool *pgxpool.Pool) http.HandlerFunc {
 
 			// Expected:
 			// ["transactions", "18"]
-			if len(parts) != 2 || parts[0] != "transactions" {
+			if len(parts) != 2 ||
+				parts[0] != "transactions" {
+
 				http.Error(
 					w,
 					"Invalid transaction path",
@@ -58,7 +76,6 @@ func TransactionHandler(pool *pgxpool.Pool) http.HandlerFunc {
 				return
 			}
 
-			// Convert the ID from string to integer.
 			id, err := strconv.Atoi(parts[1])
 
 			if err != nil {
@@ -70,13 +87,13 @@ func TransactionHandler(pool *pgxpool.Pool) http.HandlerFunc {
 				return
 			}
 
-			// Get the transaction from PostgreSQL.
-			transaction, err := storage.GetTransactionByIDFromDB(
-				pool,
-				id,
-			)
+			transaction, err :=
+				storage.GetTransactionByIDFromDB(
+					pool,
+					id,
+					userID,
+				)
 
-			// Return 404 when the transaction doesn't exist.
 			if err != nil {
 				http.Error(
 					w,
@@ -86,7 +103,6 @@ func TransactionHandler(pool *pgxpool.Pool) http.HandlerFunc {
 				return
 			}
 
-			// Return the transaction.
 			json.NewEncoder(w).Encode(transaction)
 			return
 		}
@@ -109,9 +125,14 @@ func TransactionHandler(pool *pgxpool.Pool) http.HandlerFunc {
 				return
 			}
 
-			validationError := utils.ValidateTransaction(
-				newTransaction,
-			)
+			// The authenticated user's ID comes from
+			// the session, not from the frontend.
+			newTransaction.UserID = userID
+
+			validationError :=
+				utils.ValidateTransaction(
+					newTransaction,
+				)
 
 			if validationError != "" {
 				http.Error(
@@ -138,7 +159,6 @@ func TransactionHandler(pool *pgxpool.Pool) http.HandlerFunc {
 			}
 
 			w.WriteHeader(http.StatusCreated)
-
 			json.NewEncoder(w).Encode(newTransaction)
 			return
 		}
@@ -146,15 +166,14 @@ func TransactionHandler(pool *pgxpool.Pool) http.HandlerFunc {
 		// Handle PUT requests.
 		if r.Method == http.MethodPut {
 
-			// Extract the transaction ID from the URL.
 			parts := strings.Split(
 				strings.Trim(r.URL.Path, "/"),
 				"/",
 			)
 
-			// Expected:
-			// ["transactions", "18"]
-			if len(parts) != 2 || parts[0] != "transactions" {
+			if len(parts) != 2 ||
+				parts[0] != "transactions" {
+
 				http.Error(
 					w,
 					"Invalid transaction path",
@@ -163,7 +182,6 @@ func TransactionHandler(pool *pgxpool.Pool) http.HandlerFunc {
 				return
 			}
 
-			// Convert the ID from string to integer.
 			id, err := strconv.Atoi(parts[1])
 
 			if err != nil {
@@ -175,7 +193,6 @@ func TransactionHandler(pool *pgxpool.Pool) http.HandlerFunc {
 				return
 			}
 
-			// Decode the new transaction values.
 			var updatedTransaction models.Transaction
 
 			err = json.NewDecoder(r.Body).Decode(
@@ -191,10 +208,14 @@ func TransactionHandler(pool *pgxpool.Pool) http.HandlerFunc {
 				return
 			}
 
-			// Validate the new transaction values.
-			validationError := utils.ValidateTransaction(
-				updatedTransaction,
-			)
+			// Never trust a UserID supplied by the client.
+			// The authenticated user's ID is authoritative.
+			updatedTransaction.UserID = userID
+
+			validationError :=
+				utils.ValidateTransaction(
+					updatedTransaction,
+				)
 
 			if validationError != "" {
 				http.Error(
@@ -205,12 +226,13 @@ func TransactionHandler(pool *pgxpool.Pool) http.HandlerFunc {
 				return
 			}
 
-			// Update the transaction in PostgreSQL.
-			result, err := storage.UpdateTransactionInDB(
-				pool,
-				id,
-				updatedTransaction,
-			)
+			result, err :=
+				storage.UpdateTransactionInDB(
+					pool,
+					id,
+					userID,
+					updatedTransaction,
+				)
 
 			if err != nil {
 				http.Error(
@@ -221,61 +243,65 @@ func TransactionHandler(pool *pgxpool.Pool) http.HandlerFunc {
 				return
 			}
 
-			// Return the updated transaction.
 			json.NewEncoder(w).Encode(result)
 			return
 		}
+
+		// Handle DELETE requests.
 		if r.Method == http.MethodDelete {
 
-			parts := strings.Split(strings.Trim(r.URL.Path, "/"), "/")
+			parts := strings.Split(
+				strings.Trim(r.URL.Path, "/"),
+				"/",
+			)
 
-			if len(parts) != 2 {
-				http.Error(w, "Invalid transaction path", http.StatusBadRequest)
+			if len(parts) != 2 ||
+				parts[0] != "transactions" {
+
+				http.Error(
+					w,
+					"Invalid transaction path",
+					http.StatusBadRequest,
+				)
 				return
 			}
 
 			id, err := strconv.Atoi(parts[1])
 
 			if err != nil {
-				http.Error(w, "Invalid transaction ID", http.StatusBadRequest)
+				http.Error(
+					w,
+					"Invalid transaction ID",
+					http.StatusBadRequest,
+				)
 				return
 			}
 
-			handleDeleteTransaction(w, r, pool, id)
+			err =
+				storage.DeleteTransactionFromDB(
+					pool,
+					id,
+					userID,
+				)
+
+			if err != nil {
+				http.Error(
+					w,
+					"Transaction not found",
+					http.StatusNotFound,
+				)
+				return
+			}
+
+			w.Header().Del("Content-Type")
+			w.WriteHeader(http.StatusNoContent)
 			return
 		}
 
-		// Reject unsupported HTTP methods.
 		http.Error(
 			w,
 			"Method not allowed",
 			http.StatusMethodNotAllowed,
 		)
 	}
-}
-
-// handleDeleteTransaction deletes a transaction from PostgreSQL.
-func handleDeleteTransaction(
-	w http.ResponseWriter,
-	r *http.Request,
-	pool *pgxpool.Pool,
-	id int,
-) {
-	// Delete the transaction from the database.
-	err := storage.DeleteTransactionFromDB(pool, id)
-
-	// If nothing was deleted, the transaction does not exist.
-	if err != nil {
-		http.Error(
-			w,
-			"Transaction not found",
-			http.StatusNotFound,
-		)
-		return
-	}
-
-	// 204 means the deletion was successful
-	// and there is no response body.
-	w.Header().Del("Content-Type")
-	w.WriteHeader(http.StatusNoContent)
 }

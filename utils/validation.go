@@ -23,11 +23,11 @@ func ValidateTransaction(transaction models.Transaction) string {
 		return "Amount must be greater than zero"
 	}
 
-	// Remove unnecessary spaces from the category.
-	category := strings.TrimSpace(transaction.Category)
-
-	// Make sure a category was provided.
-	if category == "" {
+	// Make sure a category ID was provided.
+	//
+	// CategoryID must be greater than zero because
+	// PostgreSQL category IDs start from 1.
+	if transaction.CategoryID <= 0 {
 		return "Category is required"
 	}
 

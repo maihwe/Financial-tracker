@@ -6,18 +6,18 @@ import "financial-tracker/models"
 // It stores both income and expenses.
 var transactions = []models.Transaction{
 	{
-		ID:       1,
-		Title:    "Starting Salary",
-		Amount:   200000,
-		Category: "Salary",
-		Type:     "income",
+		ID:         1,
+		Title:      "Starting Salary",
+		Amount:     200000,
+		CategoryID: 3,
+		Type:       "income",
 	},
 	{
-		ID:       2,
-		Title:    "Groceries",
-		Amount:   25000,
-		Category: "Food",
-		Type:     "expense",
+		ID:         2,
+		Title:      "Groceries",
+		Amount:     25000,
+		CategoryID: 1,
+		Type:       "expense",
 	},
 }
 
