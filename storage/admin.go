@@ -75,9 +75,39 @@ func UpdateUserRoleInDB(
 	role string,
 ) (models.User, error) {
 
-	var user models.User
+	var currentRole string
 
 	err := pool.QueryRow(
+		context.Background(),
+		`
+		SELECT role
+		FROM users
+		WHERE id = $1
+		`,
+		userID,
+	).Scan(&currentRole)
+
+	if err != nil {
+
+		if errors.Is(err, pgx.ErrNoRows) {
+			return models.User{}, errors.New("user not found")
+		}
+
+		return models.User{}, err
+	}
+
+	// The super_admin cannot be demoted.
+	if currentRole == "super_admin" &&
+		role != "super_admin" {
+
+		return models.User{}, errors.New(
+			"super_admin cannot be demoted",
+		)
+	}
+
+	var user models.User
+
+	err = pool.QueryRow(
 		context.Background(),
 		`
 		UPDATE users

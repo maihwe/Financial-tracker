@@ -59,49 +59,79 @@ async function loadUsers() {
             const row =
                 document.createElement("tr");
 
-            const roleCell =
-                document.createElement("td");
-
-            const roleSelect =
-                document.createElement("select");
-
-            roleSelect.innerHTML = `
-                <option value="user">user</option>
-                <option value="admin">admin</option>
-            `;
-
-            roleSelect.value = user.role;
-
-            const actionCell =
-                document.createElement("td");
-
-            const saveButton =
-                document.createElement("button");
-
-            saveButton.textContent =
-                "Save";
-
-            saveButton.addEventListener(
-                "click",
-                function() {
-
-
-                    updateUserRole(
-                        user.id,
-                        roleSelect.value
-                    );
-                }
-            );
-
-            roleCell.appendChild(roleSelect);
-
-            actionCell.appendChild(saveButton);
-
             row.innerHTML = `
                 <td>${user.id}</td>
                 <td>${user.name || "—"}</td>
                 <td>${user.email}</td>
             `;
+
+            const roleCell =
+                document.createElement("td");
+
+            if (user.role === "super_admin") {
+
+                roleCell.textContent =
+                    "super_admin";
+
+            } else {
+
+                const roleSelect =
+                    document.createElement("select");
+
+                roleSelect.innerHTML = `
+                    <option value="user">user</option>
+                    <option value="admin">admin</option>
+                `;
+
+                roleSelect.value =
+                    user.role;
+
+                roleCell.appendChild(
+                    roleSelect
+                );
+
+                const actionCell =
+                    document.createElement("td");
+
+                const saveButton =
+                    document.createElement("button");
+
+                saveButton.textContent =
+                    "Save";
+
+                saveButton.addEventListener(
+                    "click",
+                    function() {
+
+                        updateUserRole(
+                            user.id,
+                            roleSelect.value
+                        );
+                    }
+                );
+
+                row.appendChild(roleCell);
+
+                const createdCell =
+                    document.createElement("td");
+
+                createdCell.textContent =
+                    new Date(
+                        user.created_at
+                    ).toLocaleString();
+
+                row.appendChild(createdCell);
+
+                actionCell.appendChild(
+                    saveButton
+                );
+
+                row.appendChild(actionCell);
+
+                tableBody.appendChild(row);
+
+                return;
+            }
 
             row.appendChild(roleCell);
 
@@ -109,11 +139,17 @@ async function loadUsers() {
                 document.createElement("td");
 
             createdCell.textContent =
-            new Date(
-                user.created_at
-            ).toLocaleString();
+                new Date(
+                    user.created_at
+                ).toLocaleString();
 
             row.appendChild(createdCell);
+
+            const actionCell =
+                document.createElement("td");
+
+            actionCell.textContent =
+                "Protected";
 
             row.appendChild(actionCell);
 
@@ -160,7 +196,6 @@ async function updateUserRole(
                     })
                 }
             );
-
 
         if (!response.ok) {
 

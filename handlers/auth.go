@@ -76,9 +76,9 @@ func GetAuthenticatedUser(
 // RequireAdmin checks whether the current user
 // has administrator privileges.
 //
-// It returns true when the user is an admin.
-// It writes the appropriate HTTP error and
-// returns false when access is denied.
+// It returns true when the user is an admin
+// or super_admin. It writes the appropriate
+// HTTP error and returns false when access is denied.
 func RequireAdmin(
 	pool *pgxpool.Pool,
 	w http.ResponseWriter,
@@ -102,7 +102,8 @@ func RequireAdmin(
 		return false
 	}
 
-	if user.Role != "admin" {
+	if user.Role != "admin" &&
+		user.Role != "super_admin" {
 
 		http.Error(
 			w,
