@@ -10,6 +10,7 @@ import (
 )
 
 func CreateUserInDB(pool *pgxpool.Pool, user models.User) (models.User, error) {
+
 	email := strings.ToLower(strings.TrimSpace(user.Email))
 	name := strings.TrimSpace(user.Name)
 
@@ -18,7 +19,7 @@ func CreateUserInDB(pool *pgxpool.Pool, user models.User) (models.User, error) {
 		`
 		INSERT INTO users (name, email, password_hash)
 		VALUES ($1, $2, $3)
-		RETURNING id, name, email, password_hash, created_at
+		RETURNING id, name, email, password_hash, role, created_at
 		`,
 		name,
 		email,
@@ -28,6 +29,7 @@ func CreateUserInDB(pool *pgxpool.Pool, user models.User) (models.User, error) {
 		&user.Name,
 		&user.Email,
 		&user.PasswordHash,
+		&user.Role,
 		&user.CreatedAt,
 	)
 
@@ -39,6 +41,7 @@ func CreateUserInDB(pool *pgxpool.Pool, user models.User) (models.User, error) {
 }
 
 func GetUserByEmailFromDB(pool *pgxpool.Pool, email string) (models.User, error) {
+
 	var user models.User
 
 	email = strings.ToLower(strings.TrimSpace(email))
@@ -46,7 +49,7 @@ func GetUserByEmailFromDB(pool *pgxpool.Pool, email string) (models.User, error)
 	err := pool.QueryRow(
 		context.Background(),
 		`
-		SELECT id, name, email, password_hash, created_at
+		SELECT id, name, email, password_hash, role, created_at
 		FROM users
 		WHERE email = $1
 		`,
@@ -56,6 +59,7 @@ func GetUserByEmailFromDB(pool *pgxpool.Pool, email string) (models.User, error)
 		&user.Name,
 		&user.Email,
 		&user.PasswordHash,
+		&user.Role,
 		&user.CreatedAt,
 	)
 
@@ -67,12 +71,13 @@ func GetUserByEmailFromDB(pool *pgxpool.Pool, email string) (models.User, error)
 }
 
 func GetUserByIDFromDB(pool *pgxpool.Pool, id int) (models.User, error) {
+
 	var user models.User
 
 	err := pool.QueryRow(
 		context.Background(),
 		`
-		SELECT id, name, email, password_hash, created_at
+		SELECT id, name, email, password_hash, role, created_at
 		FROM users
 		WHERE id = $1
 		`,
@@ -82,6 +87,7 @@ func GetUserByIDFromDB(pool *pgxpool.Pool, id int) (models.User, error) {
 		&user.Name,
 		&user.Email,
 		&user.PasswordHash,
+		&user.Role,
 		&user.CreatedAt,
 	)
 
@@ -90,4 +96,49 @@ func GetUserByIDFromDB(pool *pgxpool.Pool, id int) (models.User, error) {
 	}
 
 	return user, nil
+}
+
+func ListUsersInDB(pool *pgxpool.Pool) ([]models.User, error) {
+
+	rows, err := pool.Query(
+		context.Background(),
+		`
+		SELECT id, name, email, role, created_at
+		FROM users
+		ORDER BY id
+		`,
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	var users []models.User
+
+	for rows.Next() {
+
+		var user models.User
+
+		err := rows.Scan(
+			&user.ID,
+			&user.Name,
+			&user.Email,
+			&user.Role,
+			&user.CreatedAt,
+		)
+
+		if err != nil {
+			return nil, err
+		}
+
+		users = append(users, user)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return users, nil
 }

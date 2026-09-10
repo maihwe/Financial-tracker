@@ -1,269 +1,269 @@
 <!DOCTYPE html>
+
 <html lang="en">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Financial Tracker</title>
+<title>Financial Tracker</title>
 
-    <link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style.css">
+
 </head>
 
 <body>
 
-    <header>
-        <h1>Financial Tracker</h1>
-        <p>Manage your income and expenses</p>
-    </header>
+<header>
+    <h1>Financial Tracker</h1>
+    <p>Manage your income and expenses</p>
+</header>
 
-    <main>
+<main>
 
-        <!-- Account Section -->
-        <section id="account">
+    <!-- Account Section -->
+    <section id="account">
 
-            <h2>Account</h2>
+        <h2>Account</h2>
 
+        <!-- Login Form -->
+        <div id="login-section">
 
-            <!-- Login Form -->
-            <div id="login-section">
+            <h3>Login</h3>
 
-                <h3>Login</h3>
+            <form id="login-form">
 
-                <form id="login-form">
+                <input
+                    type="email"
+                    id="login-email"
+                    placeholder="Email"
+                    required
+                >
+
+                <div class="password-field">
 
                     <input
-                        type="email"
-                        id="login-email"
-                        placeholder="Email"
+                        type="password"
+                        id="login-password"
+                        placeholder="Password"
                         required
                     >
 
-                    <div class="password-field">
-
-                        <input
-                            type="password"
-                            id="login-password"
-                            placeholder="Password"
-                            required
-                        >
-
-                        <button
-                            type="button"
-                            id="toggle-login-password"
-                        >
-                            Show
-                        </button>
-
-                    </div>
-
-                    <button type="submit">
-                        Login
+                    <button
+                        type="button"
+                        id="toggle-login-password"
+                        class="password-toggle"
+                        aria-label="Show password"
+                    >
+                        👁
                     </button>
 
-                </form>
+                </div>
 
-                <p id="login-message"></p>
-
-                <button
-                    type="button"
-                    id="show-register-button"
-                >
-                    Create an account
+                <button type="submit">
+                    Login
                 </button>
 
-            </div>
+            </form>
 
+            <p id="login-message"></p>
 
-            <!-- Register Form -->
-            <div id="register-section" hidden>
+            <button
+                type="button"
+                id="show-register-button"
+            >
+                Create an account
+            </button>
 
-                <h3>Create Account</h3>
+        </div>
 
-                <form id="register-form">
+        <!-- Register Form -->
+        <div id="register-section" hidden>
+
+            <h3>Create Account</h3>
+
+            <form id="register-form">
+
+                <input
+                    type="text"
+                    id="register-name"
+                    placeholder="Full Name"
+                    required
+                >
+
+                <input
+                    type="email"
+                    id="register-email"
+                    placeholder="Email"
+                    required
+                >
+
+                <div class="password-field">
 
                     <input
-                        type="text"
-                        id="register-name"
-                        placeholder="Full Name"
+                        type="password"
+                        id="register-password"
+                        placeholder="Password"
                         required
                     >
 
-                    <input
-                        type="email"
-                        id="register-email"
-                        placeholder="Email"
-                        required
+                    <button
+                        type="button"
+                        id="toggle-register-password"
+                        class="password-toggle"
+                        aria-label="Show password"
                     >
-
-                    <div class="password-field">
-
-                        <input
-                            type="password"
-                            id="register-password"
-                            placeholder="Password"
-                            required
-                        >
-
-                        <button
-                            type="button"
-                            id="toggle-register-password"
-                        >
-                            Show
-                        </button>
-
-                    </div>
-
-                    <button type="submit">
-                        Register
+                        👁
                     </button>
 
-                </form>
+                </div>
 
-                <p id="register-message"></p>
-
-                <button
-                    type="button"
-                    id="show-login-button"
-                >
-                    Back to Login
+                <button type="submit">
+                    Register
                 </button>
 
+            </form>
+
+            <p id="register-message"></p>
+
+            <button
+                type="button"
+                id="show-login-button"
+            >
+                Back to Login
+            </button>
+
+        </div>
+
+        <!-- Logged-in Account -->
+        <div id="logged-in-section" hidden>
+
+            <p>
+                Welcome,
+                <strong id="user-email"></strong>
+            </p>
+
+            <button
+                type="button"
+                id="logout-button"
+            >
+                Logout
+            </button>
+
+        </div>
+
+    </section>
+
+    <!-- Financial Dashboard -->
+    <div id="dashboard" hidden>
+
+        <!-- Financial Summary -->
+        <section id="summary">
+
+            <h2>Financial Summary</h2>
+
+            <div>
+                <h3>Total Income</h3>
+                <p id="total-income">₦0.00</p>
             </div>
 
+            <div>
+                <h3>Total Expenses</h3>
+                <p id="total-expenses">₦0.00</p>
+            </div>
 
-            <!-- Logged-in Account -->
-            <div id="logged-in-section" hidden>
-
-                <p>
-                    Logged in as:
-                    <strong id="user-email"></strong>
-                </p>
-
-                <button
-                    type="button"
-                    id="logout-button"
-                >
-                    Logout
-                </button>
-
+            <div>
+                <h3>Balance</h3>
+                <p id="balance">₦0.00</p>
             </div>
 
         </section>
 
+        <!-- Transaction Form -->
+        <section id="add-transaction">
 
-        <!-- Financial Dashboard -->
-        <div id="dashboard" hidden>
+            <h2 id="form-title">Add Transaction</h2>
 
+            <form id="transaction-form">
 
-            <!-- Financial Summary -->
-            <section id="summary">
+                <input
+                    type="text"
+                    id="title"
+                    name="title"
+                    placeholder="Transaction title"
+                    required
+                >
 
-                <h2>Financial Summary</h2>
+                <input
+                    type="number"
+                    id="amount"
+                    name="amount"
+                    placeholder="Amount"
+                    min="0"
+                    step="0.01"
+                    required
+                >
 
-                <div>
-                    <h3>Total Income</h3>
-                    <p id="total-income">₦0.00</p>
-                </div>
+                <input
+                    type="text"
+                    id="category"
+                    name="category"
+                    placeholder="Category"
+                    required
+                >
 
-                <div>
-                    <h3>Total Expenses</h3>
-                    <p id="total-expenses">₦0.00</p>
-                </div>
+                <select
+                    id="type"
+                    name="type"
+                    required
+                >
 
-                <div>
-                    <h3>Balance</h3>
-                    <p id="balance">₦0.00</p>
-                </div>
+                    <option value="income">
+                        Income
+                    </option>
 
-            </section>
+                    <option value="expense">
+                        Expense
+                    </option>
 
+                </select>
 
-            <!-- Transaction Form -->
-            <section id="add-transaction">
+                <button
+                    type="submit"
+                    id="submit-button"
+                >
+                    Add Transaction
+                </button>
 
-                <h2 id="form-title">Add Transaction</h2>
+                <button
+                    type="button"
+                    id="cancel-button"
+                    hidden
+                >
+                    Cancel Edit
+                </button>
 
-                <form id="transaction-form">
+            </form>
 
-                    <input
-                        type="text"
-                        id="title"
-                        name="title"
-                        placeholder="Transaction title"
-                        required
-                    >
+        </section>
 
-                    <input
-                        type="number"
-                        id="amount"
-                        name="amount"
-                        placeholder="Amount"
-                        min="0"
-                        step="0.01"
-                        required
-                    >
+        <!-- Transaction History -->
+        <section id="transactions">
 
-                    <input
-                        type="text"
-                        id="category"
-                        name="category"
-                        placeholder="Category"
-                        required
-                    >
+            <h2>Transactions</h2>
 
-                    <select
-                        id="type"
-                        name="type"
-                        required
-                    >
+            <div id="transaction-list"></div>
 
-                        <option value="income">
-                            Income
-                        </option>
+        </section>
 
-                        <option value="expense">
-                            Expense
-                        </option>
+    </div>
 
-                    </select>
+</main>
 
-                    <button
-                        type="submit"
-                        id="submit-button"
-                    >
-                        Add Transaction
-                    </button>
+<script src="js/utils.js"></script>
+<script src="js/transactions.js"></script>
+<script src="js/auth.js"></script>
 
-                    <button
-                        type="button"
-                        id="cancel-button"
-                        hidden
-                    >
-                        Cancel Edit
-                    </button>
-
-                </form>
-
-            </section>
-
-
-            <!-- Transaction History -->
-            <section id="transactions">
-
-                <h2>Transactions</h2>
-
-                <div id="transaction-list"></div>
-
-            </section>
-
-        </div>
-
-    </main>
-
-    <script src="js/utils.js"></script>
-    <script src="js/transactions.js"></script>
-    <script src="js/auth.js"></script>
 </body>
 
 </html>

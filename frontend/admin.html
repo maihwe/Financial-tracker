@@ -2,6 +2,7 @@
 <html lang="en">
 
 <head>
+
     <meta charset="UTF-8">
 
     <meta
@@ -15,14 +16,19 @@
         rel="stylesheet"
         href="style.css"
     >
+
 </head>
 
 <body>
 
     <header>
+
         <h1>Financial Tracker</h1>
+
         <p>Administrator Dashboard</p>
+
     </header>
+
 
     <main>
 
@@ -34,18 +40,58 @@
                 Welcome to the administrator area.
             </p>
 
-            <div class="admin-card">
-                <h3>System Overview</h3>
+
+            <!-- ============================= -->
+            <!-- SYSTEM STATISTICS              -->
+            <!-- ============================= -->
+
+            <section id="system-statistics">
+
+                <h2>System Statistics</h2>
+
+                <div id="statistics-container">
+
+                    <p id="statistics-loading">
+                        Loading statistics...
+                    </p>
+
+                </div>
+
+            </section>
+
+
+            <!-- ============================= -->
+            <!-- USER MANAGEMENT                -->
+            <!-- ============================= -->
+
+            <section id="user-management">
+
+                <h2>User Management</h2>
 
                 <p>
-                    User management and system statistics
-                    will appear here.
+                    View registered users and their roles.
                 </p>
-            </div>
+
+                <div id="users-container">
+
+                    <p id="users-loading">
+                        Loading users...
+                    </p>
+
+                </div>
+
+            </section>
 
         </section>
 
     </main>
+
+
+    <script src="js/admin.js"></script>
+
+    <script src="js/admin-users.js"></script>
+
+    <script src="js/admin-statistics.js"></script>
 
 </body>
 

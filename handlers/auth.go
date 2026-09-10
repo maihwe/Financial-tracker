@@ -5,7 +5,10 @@ import (
 	"net/http"
 	"time"
 
+	"financial-tracker/models"
 	"financial-tracker/storage"
+
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 // GetAuthenticatedUserID identifies the user associated
@@ -41,4 +44,74 @@ func GetAuthenticatedUserID(r *http.Request) (int, error) {
 
 	// The session is valid.
 	return session.UserID, nil
+}
+
+// GetAuthenticatedUser returns the full user associated
+// with the current session.
+func GetAuthenticatedUser(
+	pool *pgxpool.Pool,
+	r *http.Request,
+) (models.User, error) {
+
+	userID, err :=
+		GetAuthenticatedUserID(r)
+
+	if err != nil {
+		return models.User{}, err
+	}
+
+	user, err :=
+		storage.GetUserByIDFromDB(
+			pool,
+			userID,
+		)
+
+	if err != nil {
+		return models.User{}, errors.New("user not found")
+	}
+
+	return user, nil
+}
+
+// RequireAdmin checks whether the current user
+// has administrator privileges.
+//
+// It returns true when the user is an admin.
+// It writes the appropriate HTTP error and
+// returns false when access is denied.
+func RequireAdmin(
+	pool *pgxpool.Pool,
+	w http.ResponseWriter,
+	r *http.Request,
+) bool {
+
+	user, err :=
+		GetAuthenticatedUser(
+			pool,
+			r,
+		)
+
+	if err != nil {
+
+		http.Error(
+			w,
+			"Authentication required",
+			http.StatusUnauthorized,
+		)
+
+		return false
+	}
+
+	if user.Role != "admin" {
+
+		http.Error(
+			w,
+			"Admin access required",
+			http.StatusForbidden,
+		)
+
+		return false
+	}
+
+	return true
 }

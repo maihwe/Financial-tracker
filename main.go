@@ -13,6 +13,7 @@ func main() {
 	pool, err := database.Connect()
 
 	if err != nil {
+
 		fmt.Println(
 			"Database connection failed:",
 			err,
@@ -59,10 +60,22 @@ func main() {
 		loginHandler,
 	)
 
-	// Logout endpoint.
 	http.HandleFunc(
 		"/logout",
 		handlers.LogoutHandler,
+	)
+
+	adminHandler :=
+		handlers.AdminHandler(pool)
+
+	http.HandleFunc(
+		"/admin",
+		adminHandler,
+	)
+
+	http.HandleFunc(
+		"/admin/",
+		adminHandler,
 	)
 
 	fmt.Println(

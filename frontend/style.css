@@ -163,7 +163,6 @@ form {
     gap: 15px;
 }
 
-
 input,
 select,
 button {
@@ -175,7 +174,6 @@ button {
 
     border-radius: 9px;
 }
-
 
 input,
 select {
@@ -191,11 +189,9 @@ select {
         background 0.2s;
 }
 
-
 input::placeholder {
     color: #94a3b8;
 }
-
 
 input:focus,
 select:focus {
@@ -403,7 +399,6 @@ button:active {
     letter-spacing: 0.5px;
 }
 
-
 #summary p {
     font-size: 25px;
 
@@ -469,7 +464,6 @@ button:active {
         0 8px 22px rgba(15, 23, 42, 0.08);
 }
 
-
 .transaction-item h3 {
     margin-bottom: 12px;
 
@@ -477,7 +471,6 @@ button:active {
 
     font-size: 19px;
 }
-
 
 .transaction-item p {
     margin-bottom: 6px;
@@ -497,7 +490,6 @@ button:active {
 
     margin-top: 16px;
 }
-
 
 .transaction-buttons button {
     width: auto;
@@ -577,6 +569,163 @@ button:active {
 
 
 /* ================================
+   PASSWORD FIELD
+================================ */
+
+.password-field {
+    position: relative;
+}
+
+.password-field input {
+    width: 100%;
+
+    padding-right: 48px;
+}
+
+.password-toggle {
+    position: absolute;
+
+    right: 8px;
+    top: 50%;
+
+    transform: translateY(-50%);
+
+    width: 34px;
+    height: 34px;
+
+    padding: 0;
+
+    border: none;
+    border-radius: 6px;
+
+    background-color: #e8e8e8;
+
+    cursor: pointer;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    font-size: 17px;
+}
+
+.password-toggle:hover {
+    background-color: #d5d5d5;
+}
+
+
+/* ================================
+   ADMIN STATISTICS
+================================ */
+
+#statistics-container {
+    display: grid;
+
+    grid-template-columns:
+        repeat(3, 1fr);
+
+    gap: 20px;
+}
+
+.stat-card {
+    padding: 22px;
+
+    border-radius: 14px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #ffffff,
+            #f8fafc
+        );
+
+    border: 1px solid var(--border);
+
+    box-shadow: var(--shadow);
+
+    transition:
+        transform 0.2s,
+        box-shadow 0.2s;
+}
+
+.stat-card:hover {
+    transform: translateY(-4px);
+
+    box-shadow:
+        0 14px 30px rgba(79, 70, 229, 0.15);
+}
+
+.stat-card h3 {
+    margin-bottom: 8px;
+
+    color: var(--muted);
+
+    font-size: 14px;
+
+    text-transform: uppercase;
+
+    letter-spacing: 0.5px;
+}
+
+.stat-card p {
+    font-size: 24px;
+
+    font-weight: bold;
+
+    color: var(--dark);
+}
+
+
+/* ================================
+   ADMIN USER MANAGEMENT
+================================ */
+
+#user-management {
+    overflow-x: auto;
+}
+
+#users-container {
+    overflow-x: auto;
+}
+
+#users-container table {
+    width: 100%;
+
+    border-collapse: collapse;
+
+    margin-top: 15px;
+}
+
+#users-container th,
+#users-container td {
+    padding: 12px 10px;
+
+    text-align: left;
+
+    border-bottom: 1px solid var(--border);
+}
+
+#users-container th {
+    background: #f8fafc;
+
+    color: var(--dark);
+
+    font-size: 14px;
+}
+
+#users-container td {
+    color: var(--text);
+
+    font-size: 14px;
+}
+
+#users-container tr:hover {
+    background: #f8fafc;
+}
+
+
+/* ================================
    MOBILE LAYOUT
 ================================ */
 
@@ -606,11 +755,19 @@ button:active {
         grid-column: auto;
     }
 
+    #statistics-container {
+        grid-template-columns: 1fr;
+    }
+
     .transaction-buttons {
         flex-direction: column;
     }
 
     .transaction-buttons button {
         width: 100%;
+    }
+
+    #users-container {
+        overflow-x: auto;
     }
 }

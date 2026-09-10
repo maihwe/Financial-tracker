@@ -170,7 +170,12 @@ toggleLoginPassword.addEventListener(
                 "text";
 
             toggleLoginPassword.textContent =
-                "Hide";
+                "🙈";
+
+            toggleLoginPassword.setAttribute(
+                "aria-label",
+                "Hide password"
+            );
 
         } else {
 
@@ -178,7 +183,12 @@ toggleLoginPassword.addEventListener(
                 "password";
 
             toggleLoginPassword.textContent =
-                "Show";
+                "👁";
+
+            toggleLoginPassword.setAttribute(
+                "aria-label",
+                "Show password"
+            );
         }
     }
 );
@@ -201,7 +211,12 @@ toggleRegisterPassword.addEventListener(
                 "text";
 
             toggleRegisterPassword.textContent =
-                "Hide";
+                "🙈";
+
+            toggleRegisterPassword.setAttribute(
+                "aria-label",
+                "Hide password"
+            );
 
         } else {
 
@@ -209,7 +224,12 @@ toggleRegisterPassword.addEventListener(
                 "password";
 
             toggleRegisterPassword.textContent =
-                "Show";
+                "👁";
+
+            toggleRegisterPassword.setAttribute(
+                "aria-label",
+                "Show password"
+            );
         }
     }
 );
@@ -357,18 +377,20 @@ loginForm.addEventListener(
 
                 return;
             }
-
-
-            // Display the user's real name
-            // and email.
+            // Display only the user's name.
             userEmail.textContent =
-                data.name +
-                " (" +
-                data.email +
-                ")";
+                data.name;
 
 
-            // Show dashboard.
+            // Send administrators to the admin dashboard.
+            if (data.role === "admin") {
+
+                 window.location.href =
+                    "admin.html";
+
+                return;
+            }
+            // Show normal user dashboard.
             showDashboard();
 
 
