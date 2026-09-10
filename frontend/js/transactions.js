@@ -1,3 +1,8 @@
+// ================================
+// TRANSACTION MANAGEMENT
+// ================================
+
+
 // Find the transaction form.
 const form = document.querySelector("#transaction-form");
 
@@ -13,23 +18,8 @@ const submitButton = document.querySelector("#submit-button");
 // Find the cancel button.
 const cancelButton = document.querySelector("#cancel-button");
 
-
-// This variable stores the ID of the transaction
-// currently being edited.
-//
-// null means we are adding a new transaction.
+// Store the ID of the transaction currently being edited.
 let editingTransactionID = null;
-
-
-// Format numbers as Nigerian Naira.
-function formatCurrency(amount) {
-
-    return new Intl.NumberFormat("en-NG", {
-        style: "currency",
-        currency: "NGN"
-    }).format(amount);
-
-}
 
 
 // Load all transactions from the Go API.
@@ -39,17 +29,22 @@ async function loadTransactions() {
 
         // Ask the Go server for all transactions.
         const response = await fetch(
-            "http://localhost:8080/transactions"
+            "/transactions"
         );
 
         // Check whether the request succeeded.
         if (!response.ok) {
-            console.error("Failed to load transactions.");
+
+            console.error(
+                "Failed to load transactions."
+            );
+
             return;
         }
 
-        // Convert JSON into JavaScript data.
-        const transactions = await response.json();
+        // Convert the response into JavaScript data.
+        const transactions =
+            await response.json();
 
         // Clear the existing transaction list.
         transactionList.innerHTML = "";
@@ -65,45 +60,63 @@ async function loadTransactions() {
 
             // Calculate income.
             if (transaction.type === "income") {
-                totalIncome += transaction.amount;
+
+                totalIncome +=
+                    transaction.amount;
             }
 
             // Calculate expenses.
             if (transaction.type === "expense") {
-                totalExpenses += transaction.amount;
+
+                totalExpenses +=
+                    transaction.amount;
             }
 
 
             // Create a transaction card.
-            const item = document.createElement("div");
+            const item =
+                document.createElement("div");
 
-            item.className = "transaction-item";
+            item.className =
+                "transaction-item";
 
 
             // Format transaction date.
-            const formattedDate = new Date(
-                transaction.created_at
-            ).toLocaleString("en-NG");
+            const formattedDate =
+                new Date(
+                    transaction.transaction_at
+                ).toLocaleString("en-NG");
 
 
-            // Display transaction.
+            // Get the category name from its ID.
+            const categoryName =
+                getCategoryName(
+                    transaction.category_id
+                );
+
+
+            // Display the transaction.
             item.innerHTML = `
                 <h3>${transaction.title}</h3>
 
                 <p>
-                    Amount: ${formatCurrency(transaction.amount)}
+                    Amount:
+                    ${formatCurrency(transaction.amount)}
                 </p>
 
                 <p>
-                    Category: ${transaction.category}
+                    Category:
+                    ${categoryName}
                 </p>
 
                 <p>
-                    Type: ${transaction.type}
+                    Type:
+                    ${transaction.type}
                 </p>
 
                 <p>
-                    Date: ${formattedDate}
+                    Date:
+                    ${formattedDate}
                 </p>
 
                 <div class="transaction-buttons">
@@ -133,17 +146,24 @@ async function loadTransactions() {
 
 
         // Calculate balance.
-        const balance = totalIncome - totalExpenses;
+        const balance =
+            totalIncome - totalExpenses;
 
 
         // Display financial summary.
-        document.querySelector("#total-income").textContent =
+        document.querySelector(
+            "#total-income"
+        ).textContent =
             formatCurrency(totalIncome);
 
-        document.querySelector("#total-expenses").textContent =
+        document.querySelector(
+            "#total-expenses"
+        ).textContent =
             formatCurrency(totalExpenses);
 
-        document.querySelector("#balance").textContent =
+        document.querySelector(
+            "#balance"
+        ).textContent =
             formatCurrency(balance);
 
     } catch (error) {
@@ -152,9 +172,7 @@ async function loadTransactions() {
             "Error loading transactions:",
             error
         );
-
     }
-
 }
 
 
@@ -163,25 +181,23 @@ transactionList.addEventListener(
     "click",
     async function(event) {
 
-
         // Check if Edit was clicked.
-        if (event.target.classList.contains("edit-button")) {
+        if (
+            event.target.classList.contains(
+                "edit-button"
+            )
+        ) {
 
             // Get the transaction ID.
             const transactionID =
                 event.target.dataset.id;
 
 
-            console.log(
-                "Editing transaction:",
-                transactionID
-            );
-
-
             // Get the transaction from the API.
-            const response = await fetch(
-                `http://localhost:8080/transactions/${transactionID}`
-            );
+            const response =
+                await fetch(
+                    `/transactions/${transactionID}`
+                );
 
 
             // Check whether the request succeeded.
@@ -200,28 +216,32 @@ transactionList.addEventListener(
                 await response.json();
 
 
-            console.log(
-                "Transaction to edit:",
-                transaction
-            );
-
-
             // Remember which transaction we are editing.
             editingTransactionID =
                 transaction.id;
 
 
             // Put the transaction values into the form.
-            document.querySelector("#title").value =
+            document.querySelector(
+                "#title"
+            ).value =
                 transaction.title;
 
-            document.querySelector("#amount").value =
+            document.querySelector(
+                "#amount"
+            ).value =
                 transaction.amount;
 
-            document.querySelector("#category").value =
-                transaction.category;
+            document.querySelector(
+                "#category"
+            ).value =
+                getCategoryName(
+                    transaction.category_id
+                );
 
-            document.querySelector("#type").value =
+            document.querySelector(
+                "#type"
+            ).value =
                 transaction.type;
 
 
@@ -232,38 +252,37 @@ transactionList.addEventListener(
             submitButton.textContent =
                 "Update Transaction";
 
-            cancelButton.hidden = false;
+            cancelButton.hidden =
+                false;
 
 
             // Move the user back to the form.
             form.scrollIntoView({
                 behavior: "smooth"
             });
-
         }
 
 
         // Check if Delete was clicked.
-        if (event.target.classList.contains("delete-button")) {
+        if (
+            event.target.classList.contains(
+                "delete-button"
+            )
+        ) {
 
-            // Get transaction ID.
+            // Get the transaction ID.
             const transactionID =
                 event.target.dataset.id;
 
 
-            console.log(
-                "Deleting transaction:",
-                transactionID
-            );
-
-
             // Ask the server to delete the transaction.
-            const response = await fetch(
-                `http://localhost:8080/transactions/${transactionID}`,
-                {
-                    method: "DELETE"
-                }
-            );
+            const response =
+                await fetch(
+                    `/transactions/${transactionID}`,
+                    {
+                        method: "DELETE"
+                    }
+                );
 
 
             // Check whether deletion succeeded.
@@ -277,17 +296,9 @@ transactionList.addEventListener(
             }
 
 
-            console.log(
-                "Transaction deleted:",
-                transactionID
-            );
-
-
             // Reload the transaction list.
             loadTransactions();
-
         }
-
     }
 );
 
@@ -305,66 +316,80 @@ form.addEventListener(
         const transaction = {
 
             title:
-                document.querySelector("#title").value,
+                document.querySelector(
+                    "#title"
+                ).value,
 
             amount:
                 Number(
-                    document.querySelector("#amount").value
+                    document.querySelector(
+                        "#amount"
+                    ).value
                 ),
 
-            category:
-                document.querySelector("#category").value,
+            category_id:
+                getCategoryID(
+                    document.querySelector(
+                        "#category"
+                    ).value
+                ),
 
             type:
-                document.querySelector("#type").value
+                document.querySelector(
+                    "#type"
+                ).value
         };
-
-
-        console.log(
-            "Transaction from form:",
-            transaction
-        );
 
 
         let response;
 
 
-        // If editingTransactionID is null,
+        // If no transaction is being edited,
         // create a new transaction.
-        if (editingTransactionID === null) {
+        if (
+            editingTransactionID === null
+        ) {
 
-            response = await fetch(
-                "http://localhost:8080/transactions",
-                {
-                    method: "POST",
+            response =
+                await fetch(
+                    "/transactions",
+                    {
+                        method: "POST",
 
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
+                        headers: {
+                            "Content-Type":
+                                "application/json"
+                        },
 
-                    body: JSON.stringify(transaction)
-                }
-            );
-
+                        body:
+                            JSON.stringify(
+                                transaction
+                            )
+                    }
+                );
         }
 
 
         // Otherwise update an existing transaction.
         else {
 
-            response = await fetch(
-                `http://localhost:8080/transactions/${editingTransactionID}`,
-                {
-                    method: "PUT",
+            response =
+                await fetch(
+                    `/transactions/${editingTransactionID}`,
+                    {
+                        method: "PUT",
 
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
+                        headers: {
+                            "Content-Type":
+                                "application/json"
+                        },
 
-                    body: JSON.stringify(transaction)
-                }
-            );
-
+                        body:
+                            JSON.stringify(
+                                transaction
+                            )
+                    }
+                );
         }
 
 
@@ -379,22 +404,13 @@ form.addEventListener(
         }
 
 
-        // Show the server response.
-        const savedTransaction =
-            await response.json();
-
-        console.log(
-            "Saved transaction:",
-            savedTransaction
-        );
-
-
         // Reset the form.
         form.reset();
 
 
         // Reset edit mode.
-        editingTransactionID = null;
+        editingTransactionID =
+            null;
 
 
         // Return form to Add mode.
@@ -404,12 +420,12 @@ form.addEventListener(
         submitButton.textContent =
             "Add Transaction";
 
-        cancelButton.hidden = true;
+        cancelButton.hidden =
+            true;
 
 
         // Reload transactions and summary.
         loadTransactions();
-
     }
 );
 
@@ -419,26 +435,23 @@ cancelButton.addEventListener(
     "click",
     function() {
 
-        // Clear form.
+        // Reset the form.
         form.reset();
 
 
         // Leave edit mode.
-        editingTransactionID = null;
+        editingTransactionID =
+            null;
 
 
-        // Return to Add mode.
+        // Return form to Add mode.
         formTitle.textContent =
             "Add Transaction";
 
         submitButton.textContent =
             "Add Transaction";
 
-        cancelButton.hidden = true;
-
+        cancelButton.hidden =
+            true;
     }
 );
-
-
-// Load transactions when the page opens.
-loadTransactions();

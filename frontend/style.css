@@ -1,4 +1,7 @@
-/* Reset browser default spacing */
+/* ================================
+   RESET
+================================ */
+
 * {
     box-sizing: border-box;
     margin: 0;
@@ -6,175 +9,601 @@
 }
 
 
-/* Basic page styling */
-body {
-    font-family: Arial, sans-serif;
-    background: #f4f6f8;
-    color: #222;
-    line-height: 1.6;
+/* ================================
+   COLOR VARIABLES
+================================ */
+
+:root {
+    --primary: #6366f1;
+    --primary-dark: #4f46e5;
+    --secondary: #8b5cf6;
+
+    --income: #10b981;
+    --expense: #ef4444;
+    --balance: #06b6d4;
+
+    --dark: #1e1b4b;
+    --text: #334155;
+    --muted: #64748b;
+
+    --background: #eef2ff;
+    --card: #ffffff;
+    --border: #e2e8f0;
+
+    --shadow: 0 10px 30px rgba(79, 70, 229, 0.10);
 }
 
 
-/* Header */
+/* ================================
+   BODY
+================================ */
+
+body {
+    font-family: Arial, sans-serif;
+
+    background:
+        linear-gradient(
+            135deg,
+            #eef2ff 0%,
+            #f5f3ff 50%,
+            #ecfeff 100%
+        );
+
+    color: var(--text);
+
+    line-height: 1.6;
+
+    min-height: 100vh;
+}
+
+
+/* ================================
+   HEADER
+================================ */
+
 header {
-    background: #1f2937;
+    background:
+        linear-gradient(
+            135deg,
+            var(--primary-dark),
+            var(--secondary)
+        );
+
     color: white;
+
     text-align: center;
-    padding: 30px 20px;
+
+    padding: 45px 20px;
+
+    box-shadow:
+        0 8px 25px rgba(79, 70, 229, 0.25);
 }
 
 header h1 {
-    margin-bottom: 5px;
+    font-size: 38px;
+
+    margin-bottom: 8px;
+
+    letter-spacing: 0.5px;
+}
+
+header p {
+    font-size: 17px;
+
+    opacity: 0.9;
 }
 
 
-/* Main content */
+/* ================================
+   MAIN CONTENT
+================================ */
+
 main {
-    width: 90%;
-    max-width: 1000px;
-    margin: 30px auto;
+    width: 92%;
+
+    max-width: 1050px;
+
+    margin: 35px auto;
 }
 
 
-/* All sections */
+/* ================================
+   ALL SECTIONS
+================================ */
+
 section {
-    background: white;
-    padding: 25px;
+    background: var(--card);
+
+    padding: 28px;
+
     margin-bottom: 25px;
-    border-radius: 10px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+
+    border-radius: 16px;
+
+    border: 1px solid rgba(226, 232, 240, 0.8);
+
+    box-shadow: var(--shadow);
 }
 
 section h2 {
+    color: var(--dark);
+
     margin-bottom: 20px;
-}
 
-
-/* Financial summary */
-#summary {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 20px;
-}
-
-#summary h2 {
-    grid-column: 1 / -1;
-}
-
-#summary div {
-    padding: 20px;
-    border-radius: 8px;
-    background: #f8fafc;
-}
-
-#summary h3 {
-    margin-bottom: 8px;
-}
-
-#summary p {
     font-size: 24px;
-    font-weight: bold;
 }
 
 
-/* Transaction form */
+/* ================================
+   ACCOUNT
+================================ */
+
+#account {
+    border-top: 5px solid var(--primary);
+}
+
+#account h2 {
+    color: var(--primary-dark);
+}
+
+#account h3 {
+    color: var(--dark);
+
+    margin-bottom: 15px;
+}
+
+
+/* ================================
+   FORMS
+================================ */
+
 form {
     display: grid;
+
     gap: 15px;
 }
+
 
 input,
 select,
 button {
     width: 100%;
-    padding: 12px;
+
+    padding: 13px 15px;
+
     font-size: 16px;
-    border: 1px solid #d1d5db;
-    border-radius: 6px;
+
+    border-radius: 9px;
 }
+
+
+input,
+select {
+    background: #f8fafc;
+
+    color: var(--text);
+
+    border: 1px solid var(--border);
+
+    transition:
+        border-color 0.2s,
+        box-shadow 0.2s,
+        background 0.2s;
+}
+
+
+input::placeholder {
+    color: #94a3b8;
+}
+
 
 input:focus,
 select:focus {
     outline: none;
-    border-color: #2563eb;
+
+    background: white;
+
+    border-color: var(--primary);
+
+    box-shadow:
+        0 0 0 4px rgba(99, 102, 241, 0.12);
 }
 
 
-/* Main button */
+/* ================================
+   BUTTONS
+================================ */
+
 button {
-    background: #2563eb;
+    background:
+        linear-gradient(
+            135deg,
+            var(--primary),
+            var(--secondary)
+        );
+
     color: white;
+
     border: none;
+
     cursor: pointer;
+
+    font-weight: bold;
+
+    transition:
+        transform 0.2s,
+        box-shadow 0.2s,
+        opacity 0.2s;
 }
 
 button:hover {
-    background: #1d4ed8;
+    transform: translateY(-2px);
+
+    box-shadow:
+        0 7px 18px rgba(99, 102, 241, 0.25);
+}
+
+button:active {
+    transform: translateY(0);
 }
 
 
-/* Cancel button */
-#cancel-button {
-    background: #6b7280;
+/* ================================
+   ACCOUNT BUTTONS
+================================ */
+
+#show-register-button,
+#show-login-button {
+    margin-top: 15px;
+
+    background: transparent;
+
+    color: var(--primary-dark);
+
+    border: 1px solid var(--primary);
 }
 
-#cancel-button:hover {
-    background: #4b5563;
+#show-register-button:hover,
+#show-login-button:hover {
+    background: #eef2ff;
+
+    box-shadow: none;
 }
 
 
-/* Transaction history */
+/* ================================
+   LOGGED-IN ACCOUNT
+================================ */
+
+#logged-in-section {
+    background:
+        linear-gradient(
+            135deg,
+            #ecfdf5,
+            #f0fdfa
+        );
+
+    border: 1px solid #a7f3d0;
+}
+
+#logged-in-section p {
+    margin-bottom: 15px;
+
+    color: var(--text);
+}
+
+
+/* ================================
+   FINANCIAL SUMMARY
+================================ */
+
+#summary {
+    display: grid;
+
+    grid-template-columns:
+        repeat(3, 1fr);
+
+    gap: 20px;
+
+    background: transparent;
+
+    border: none;
+
+    box-shadow: none;
+
+    padding: 0;
+}
+
+#summary h2 {
+    grid-column: 1 / -1;
+
+    color: var(--dark);
+
+    padding-left: 5px;
+}
+
+
+/* Summary cards */
+
+#summary div {
+    padding: 24px;
+
+    border-radius: 16px;
+
+    background: white;
+
+    box-shadow: var(--shadow);
+
+    border-left: 5px solid var(--primary);
+
+    transition:
+        transform 0.2s,
+        box-shadow 0.2s;
+}
+
+#summary div:hover {
+    transform: translateY(-4px);
+
+    box-shadow:
+        0 14px 30px rgba(79, 70, 229, 0.15);
+}
+
+
+/* Income */
+
+#summary div:nth-of-type(1) {
+    border-left-color: var(--income);
+
+    background:
+        linear-gradient(
+            135deg,
+            #ffffff,
+            #ecfdf5
+        );
+}
+
+
+/* Expenses */
+
+#summary div:nth-of-type(2) {
+    border-left-color: var(--expense);
+
+    background:
+        linear-gradient(
+            135deg,
+            #ffffff,
+            #fff1f2
+        );
+}
+
+
+/* Balance */
+
+#summary div:nth-of-type(3) {
+    border-left-color: var(--balance);
+
+    background:
+        linear-gradient(
+            135deg,
+            #ffffff,
+            #ecfeff
+        );
+}
+
+
+#summary h3 {
+    margin-bottom: 8px;
+
+    color: var(--muted);
+
+    font-size: 15px;
+
+    text-transform: uppercase;
+
+    letter-spacing: 0.5px;
+}
+
+
+#summary p {
+    font-size: 25px;
+
+    font-weight: bold;
+
+    color: var(--dark);
+}
+
+
+/* ================================
+   TRANSACTION FORM
+================================ */
+
+#add-transaction {
+    border-top: 5px solid var(--secondary);
+}
+
+#form-title {
+    color: var(--secondary);
+}
+
+
+/* ================================
+   TRANSACTION HISTORY
+================================ */
+
+#transactions {
+    border-top: 5px solid var(--primary);
+}
+
 #transaction-list {
     display: grid;
+
     gap: 15px;
 }
 
+
+/* Transaction card */
+
 .transaction-item {
-    padding: 18px;
-    border: 1px solid #e5e7eb;
-    border-radius: 8px;
-    background: #f8fafc;
+    padding: 20px;
+
+    border: 1px solid var(--border);
+
+    border-radius: 12px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #ffffff,
+            #f8fafc
+        );
+
+    transition:
+        transform 0.2s,
+        box-shadow 0.2s;
 }
+
+.transaction-item:hover {
+    transform: translateY(-3px);
+
+    box-shadow:
+        0 8px 22px rgba(15, 23, 42, 0.08);
+}
+
 
 .transaction-item h3 {
-    margin-bottom: 10px;
+    margin-bottom: 12px;
+
+    color: var(--dark);
+
+    font-size: 19px;
 }
+
 
 .transaction-item p {
-    margin-bottom: 5px;
+    margin-bottom: 6px;
+
+    color: var(--muted);
 }
 
 
-/* Transaction buttons */
+/* ================================
+   TRANSACTION BUTTONS
+================================ */
+
 .transaction-buttons {
     display: flex;
+
     gap: 10px;
-    margin-top: 15px;
+
+    margin-top: 16px;
 }
+
 
 .transaction-buttons button {
     width: auto;
-    padding: 10px 18px;
+
+    padding: 10px 20px;
 }
+
+
+/* Edit */
 
 .edit-button {
-    background: #2563eb;
+    background:
+        linear-gradient(
+            135deg,
+            #6366f1,
+            #8b5cf6
+        );
 }
 
+
+/* Delete */
+
 .delete-button {
-    background: #dc2626;
+    background:
+        linear-gradient(
+            135deg,
+            #ef4444,
+            #f43f5e
+        );
 }
 
 .delete-button:hover {
-    background: #b91c1c;
+    background:
+        linear-gradient(
+            135deg,
+            #dc2626,
+            #e11d48
+        );
 }
 
 
-/* Mobile layout */
+/* ================================
+   CANCEL BUTTON
+================================ */
+
+#cancel-button {
+    background:
+        linear-gradient(
+            135deg,
+            #64748b,
+            #475569
+        );
+}
+
+#cancel-button:hover {
+    background:
+        linear-gradient(
+            135deg,
+            #475569,
+            #334155
+        );
+}
+
+
+/* ================================
+   MESSAGES
+================================ */
+
+#login-message,
+#register-message {
+    margin-top: 10px;
+
+    color: var(--primary-dark);
+
+    font-weight: bold;
+}
+
+
+/* ================================
+   MOBILE LAYOUT
+================================ */
+
 @media (max-width: 700px) {
+
+    header {
+        padding: 35px 15px;
+    }
+
+    header h1 {
+        font-size: 30px;
+    }
+
+    main {
+        width: 94%;
+    }
+
+    section {
+        padding: 20px;
+    }
 
     #summary {
         grid-template-columns: 1fr;
+    }
+
+    #summary h2 {
+        grid-column: auto;
     }
 
     .transaction-buttons {

@@ -19,105 +19,251 @@
 
     <main>
 
-        <!-- Financial Summary -->
-        <section id="summary">
+        <!-- Account Section -->
+        <section id="account">
 
-            <h2>Financial Summary</h2>
-
-            <div>
-                <h3>Total Income</h3>
-                <p id="total-income">₦0.00</p>
-            </div>
-
-            <div>
-                <h3>Total Expenses</h3>
-                <p id="total-expenses">₦0.00</p>
-            </div>
-
-            <div>
-                <h3>Balance</h3>
-                <p id="balance">₦0.00</p>
-            </div>
-
-        </section>
+            <h2>Account</h2>
 
 
-        <!-- Transaction Form -->
-        <section id="add-transaction">
+            <!-- Login Form -->
+            <div id="login-section">
 
-            <h2 id="form-title">Add Transaction</h2>
+                <h3>Login</h3>
 
-            <form id="transaction-form">
+                <form id="login-form">
 
-                <input
-                    type="text"
-                    id="title"
-                    name="title"
-                    placeholder="Transaction title"
-                    required
-                >
+                    <input
+                        type="email"
+                        id="login-email"
+                        placeholder="Email"
+                        required
+                    >
 
-                <input
-                    type="number"
-                    id="amount"
-                    name="amount"
-                    placeholder="Amount"
-                    min="0"
-                    step="0.01"
-                    required
-                >
+                    <div class="password-field">
 
-                <input
-                    type="text"
-                    id="category"
-                    name="category"
-                    placeholder="Category"
-                    required
-                >
+                        <input
+                            type="password"
+                            id="login-password"
+                            placeholder="Password"
+                            required
+                        >
 
-                <select
-                    id="type"
-                    name="type"
-                    required
-                >
-                    <option value="income">Income</option>
-                    <option value="expense">Expense</option>
-                </select>
+                        <button
+                            type="button"
+                            id="toggle-login-password"
+                        >
+                            Show
+                        </button>
 
-                <button
-                    type="submit"
-                    id="submit-button"
-                >
-                    Add Transaction
-                </button>
+                    </div>
+
+                    <button type="submit">
+                        Login
+                    </button>
+
+                </form>
+
+                <p id="login-message"></p>
 
                 <button
                     type="button"
-                    id="cancel-button"
-                    hidden
+                    id="show-register-button"
                 >
-                    Cancel Edit
+                    Create an account
                 </button>
 
-            </form>
+            </div>
+
+
+            <!-- Register Form -->
+            <div id="register-section" hidden>
+
+                <h3>Create Account</h3>
+
+                <form id="register-form">
+
+                    <input
+                        type="text"
+                        id="register-name"
+                        placeholder="Full Name"
+                        required
+                    >
+
+                    <input
+                        type="email"
+                        id="register-email"
+                        placeholder="Email"
+                        required
+                    >
+
+                    <div class="password-field">
+
+                        <input
+                            type="password"
+                            id="register-password"
+                            placeholder="Password"
+                            required
+                        >
+
+                        <button
+                            type="button"
+                            id="toggle-register-password"
+                        >
+                            Show
+                        </button>
+
+                    </div>
+
+                    <button type="submit">
+                        Register
+                    </button>
+
+                </form>
+
+                <p id="register-message"></p>
+
+                <button
+                    type="button"
+                    id="show-login-button"
+                >
+                    Back to Login
+                </button>
+
+            </div>
+
+
+            <!-- Logged-in Account -->
+            <div id="logged-in-section" hidden>
+
+                <p>
+                    Logged in as:
+                    <strong id="user-email"></strong>
+                </p>
+
+                <button
+                    type="button"
+                    id="logout-button"
+                >
+                    Logout
+                </button>
+
+            </div>
 
         </section>
 
 
-        <!-- Transaction History -->
-        <section id="transactions">
+        <!-- Financial Dashboard -->
+        <div id="dashboard" hidden>
 
-            <h2>Transactions</h2>
 
-            <div id="transaction-list"></div>
+            <!-- Financial Summary -->
+            <section id="summary">
 
-        </section>
+                <h2>Financial Summary</h2>
+
+                <div>
+                    <h3>Total Income</h3>
+                    <p id="total-income">₦0.00</p>
+                </div>
+
+                <div>
+                    <h3>Total Expenses</h3>
+                    <p id="total-expenses">₦0.00</p>
+                </div>
+
+                <div>
+                    <h3>Balance</h3>
+                    <p id="balance">₦0.00</p>
+                </div>
+
+            </section>
+
+
+            <!-- Transaction Form -->
+            <section id="add-transaction">
+
+                <h2 id="form-title">Add Transaction</h2>
+
+                <form id="transaction-form">
+
+                    <input
+                        type="text"
+                        id="title"
+                        name="title"
+                        placeholder="Transaction title"
+                        required
+                    >
+
+                    <input
+                        type="number"
+                        id="amount"
+                        name="amount"
+                        placeholder="Amount"
+                        min="0"
+                        step="0.01"
+                        required
+                    >
+
+                    <input
+                        type="text"
+                        id="category"
+                        name="category"
+                        placeholder="Category"
+                        required
+                    >
+
+                    <select
+                        id="type"
+                        name="type"
+                        required
+                    >
+
+                        <option value="income">
+                            Income
+                        </option>
+
+                        <option value="expense">
+                            Expense
+                        </option>
+
+                    </select>
+
+                    <button
+                        type="submit"
+                        id="submit-button"
+                    >
+                        Add Transaction
+                    </button>
+
+                    <button
+                        type="button"
+                        id="cancel-button"
+                        hidden
+                    >
+                        Cancel Edit
+                    </button>
+
+                </form>
+
+            </section>
+
+
+            <!-- Transaction History -->
+            <section id="transactions">
+
+                <h2>Transactions</h2>
+
+                <div id="transaction-list"></div>
+
+            </section>
+
+        </div>
 
     </main>
 
-
-    <script src="app.js"></script>
-
+    <script src="js/utils.js"></script>
+    <script src="js/transactions.js"></script>
+    <script src="js/auth.js"></script>
 </body>
 
 </html>

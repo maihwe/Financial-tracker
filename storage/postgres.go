@@ -26,7 +26,7 @@ func GetAllTransactionsFromDB(
 			id,
 			user_id,
 			title,
-			description,
+			COALESCE(description, '') AS description,
 			amount,
 			category_id,
 			type,

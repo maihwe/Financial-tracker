@@ -10,47 +10,75 @@ import (
 
 func main() {
 
-	// Connect to the PostgreSQL database.
 	pool, err := database.Connect()
 
-	// Stop the application if the database connection fails.
 	if err != nil {
-		fmt.Println("Database connection failed:", err)
+		fmt.Println(
+			"Database connection failed:",
+			err,
+		)
+
 		return
 	}
 
-	// Close the connection pool when the server stops.
 	defer pool.Close()
 
-	// Create our transaction handler using the database pool.
-	transactionHandler := handlers.TransactionHandler(pool)
+	transactionHandler :=
+		handlers.TransactionHandler(pool)
 
-	// Create our registration handler using the database pool.
-	registerHandler := handlers.RegisterHandler(pool)
+	http.Handle(
+		"/",
+		http.FileServer(
+			http.Dir("./frontend"),
+		),
+	)
 
-	// Serve the frontend files.
-	http.Handle("/", http.FileServer(http.Dir("./frontend")))
+	http.HandleFunc(
+		"/transactions",
+		transactionHandler,
+	)
 
-	// Register the transaction routes.
-	http.HandleFunc("/transactions", transactionHandler)
-	http.HandleFunc("/transactions/", transactionHandler)
+	http.HandleFunc(
+		"/transactions/",
+		transactionHandler,
+	)
 
-	// Register the user registration route.
-	http.HandleFunc("/register", registerHandler)
+	registerHandler :=
+		handlers.RegisterHandler(pool)
 
-	// Create our login handler using the database pool.
-	loginHandler := handlers.LoginHandler(pool)
+	http.HandleFunc(
+		"/register",
+		registerHandler,
+	)
 
-	// Register the user login route.
-	http.HandleFunc("/login", loginHandler)
+	loginHandler :=
+		handlers.LoginHandler(pool)
 
-	fmt.Println("Server running on http://localhost:8080")
+	http.HandleFunc(
+		"/login",
+		loginHandler,
+	)
 
-	// Start the HTTP server.
-	err = http.ListenAndServe(":8080", nil)
+	// Logout endpoint.
+	http.HandleFunc(
+		"/logout",
+		handlers.LogoutHandler,
+	)
 
-	// Report a server error if one occurs.
+	fmt.Println(
+		"Server running on http://localhost:8080",
+	)
+
+	err = http.ListenAndServe(
+		":8080",
+		nil,
+	)
+
 	if err != nil {
-		fmt.Println("Server error:", err)
+
+		fmt.Println(
+			"Server error:",
+			err,
+		)
 	}
 }
