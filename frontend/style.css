@@ -771,3 +771,84 @@ button:active {
         overflow-x: auto;
     }
 }
+
+/* ================================
+   ADMIN DASHBOARD THEME
+================================ */
+
+#admin-section {
+    background: #f8fafc;
+    border: 1px solid #cbd5e1;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+}
+
+#admin-section > h2 {
+    color: #0f172a;
+    font-size: 28px;
+    margin-bottom: 8px;
+}
+
+#admin-section > p {
+    color: #64748b;
+}
+
+
+/* ================================
+   ADMIN STATISTICS
+================================ */
+
+#system-statistics {
+    border-top: 5px solid #2563eb;
+}
+
+#system-statistics h2 {
+    color: #1e3a8a;
+}
+
+.stat-card {
+    background: #ffffff;
+    border: 1px solid #dbeafe;
+    box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
+}
+
+.stat-card:hover {
+    box-shadow: 0 10px 24px rgba(37, 99, 235, 0.12);
+}
+
+.stat-card h3 {
+    color: #64748b;
+}
+
+.stat-card p {
+    color: #0f172a;
+}
+
+
+/* ================================
+   ADMIN USER MANAGEMENT
+================================ */
+
+#user-management {
+    border-top: 5px solid #475569;
+}
+
+#user-management h2 {
+    color: #1e293b;
+}
+
+#users-container table {
+    background: #ffffff;
+}
+
+#users-container th {
+    background: #f1f5f9;
+    color: #1e293b;
+}
+
+#users-container td {
+    color: #334155;
+}
+
+#users-container tr:hover {
+    background: #f8fafc;
+}

@@ -4,6 +4,7 @@ go 1.26.0
 
 require (
 	github.com/jackc/pgx/v5 v5.10.0
+	github.com/resend/resend-go/v4 v4.4.0
 	golang.org/x/crypto v0.57.0
 )
 

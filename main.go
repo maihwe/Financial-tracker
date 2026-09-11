@@ -59,6 +59,21 @@ func main() {
 		"/login",
 		loginHandler,
 	)
+	forgotPasswordHandler :=
+		handlers.ForgotPasswordHandler(pool)
+
+	http.HandleFunc(
+		"/forgot-password",
+		forgotPasswordHandler,
+	)
+
+	resetPasswordHandler :=
+		handlers.ResetPasswordRouteHandler(pool)
+
+	http.HandleFunc(
+		"/reset-password",
+		resetPasswordHandler,
+	)
 
 	http.HandleFunc(
 		"/logout",
